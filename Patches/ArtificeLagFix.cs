@@ -1,9 +1,18 @@
 ﻿using HarmonyLib;
 using UnityEngine;
 using System.Text.RegularExpressions;
+using System;
 
 namespace VanillaMoonsLagFix.Patches
 {
+    enum MoonsIDs
+    {
+        marchID = 4,
+        rendID = 6,
+        dineID = 7,
+        artificeID = 10
+    }
+
     [HarmonyPatch]
     public class ArtificeLagFix
     {
@@ -11,65 +20,63 @@ namespace VanillaMoonsLagFix.Patches
         [HarmonyPostfix]
         public static void LoadNewLevelWaitArtificePatch(RoundManager __instance)
         {
-            const int artificeID = 10;
+            bool needsToBePatched = Enum.IsDefined(typeof(MoonsIDs), __instance.currentLevel.levelID);
 
-            if (__instance.currentLevel.levelID == artificeID)
+            if (needsToBePatched)
             {
-                bool removedWindTriggers = ArtificeTriggerRemover.ArtificeWindTriggerRemover();
+                bool removedWindTriggers = TriggerRemover.WindTriggerRemover();
+
+                string levelName = __instance.currentLevel.name;
 
                 if (removedWindTriggers)
                 {
-                    VanillaMoonsLagFix.Logger.LogInfo("Successfully disabled wind triggers on Artifice.");
+                    VanillaMoonsLagFix.Logger.LogInfo(String.Format("Successfully disabled wind triggers on {0}.", levelName));
                 }
                 else
                 {
-                    VanillaMoonsLagFix.Logger.LogError("Wind triggers on Artifice seem to be unloaded, can't modify them.");
+                    VanillaMoonsLagFix.Logger.LogError(String.Format("Wind triggers on {0} seem to be unloaded, can't modify them.", levelName));
                 }
 
-                bool removedReverbTriggers = ArtificeTriggerRemover.ArtificeAudioReverbTriggerRemover();
+                bool removedReverbTriggers = TriggerRemover.AudioReverbTriggerRemover();
 
                 if (removedReverbTriggers)
                 {
-                    VanillaMoonsLagFix.Logger.LogInfo("Successfully disabled reverb triggers on Artifice.");
+                    VanillaMoonsLagFix.Logger.LogInfo(String.Format("Successfully disabled reverb triggers on {0}.", levelName));
                 }
                 else
                 {
-                    VanillaMoonsLagFix.Logger.LogError("Reverb triggers on Artifice seem to be unloaded, can't modify them.");
+                    VanillaMoonsLagFix.Logger.LogError(String.Format("Reverb triggers on {0} seem to be unloaded, can't modify them.", levelName));
                 }
             }
         }
 
-        class ArtificeTriggerRemover
+        class TriggerRemover
         {
-            internal static bool ArtificeWindTriggerRemover()
+            internal static bool WindTriggerRemover()
             {
                 Transform environment = GameObject.Find("/Environment").transform;
                 Transform windTriggers = environment.Find("ReverbTriggers (1)/WindTriggers");
 
                 if (windTriggers == null)
                 {
-                    VanillaMoonsLagFix.Logger.LogDebug("Can't find any wind triggers, probably Artifice is unloaded.");
-
                     return false;
                 }
                 else
                 {
                     windTriggers.gameObject.SetActive(false);
 
-                    VanillaMoonsLagFix.Logger.LogDebug("Set " + windTriggers.gameObject.name + " activeSelf to false!");
+                    VanillaMoonsLagFix.Logger.LogDebug(String.Format("Set {0} activeSelf to false!", windTriggers.gameObject.name));
 
                     return true;
                 }
             }
 
-            internal static bool ArtificeAudioReverbTriggerRemover()
+            internal static bool AudioReverbTriggerRemover()
             {
                 AudioReverbTrigger[] reverbTriggers = GameObject.FindObjectsByType<AudioReverbTrigger>(FindObjectsSortMode.None);
 
                 if (reverbTriggers == null)
                 {
-                    VanillaMoonsLagFix.Logger.LogDebug("Can't find any reverb triggers, probably Artifice is unloaded.");
-
                     return false;
                 }
                 else
@@ -86,11 +93,11 @@ namespace VanillaMoonsLagFix.Patches
 
                             disabledTriggersCount++;
 
-                            VanillaMoonsLagFix.Logger.LogDebug("Found AudioReverbTrigger object: " + reverbTriggers[i].gameObject.name);
+                            VanillaMoonsLagFix.Logger.LogDebug(String.Format("Found AudioReverbTrigger object: {0}", reverbTriggers[i].gameObject.name));
                         }
                     }
 
-                    VanillaMoonsLagFix.Logger.LogDebug("Set " + disabledTriggersCount + " reverb triggers' activeSelf to false!");
+                    VanillaMoonsLagFix.Logger.LogDebug(String.Format("Set {0} reverb triggers' activeSelf to false!", disabledTriggersCount));
 
                     return true;
                 }
