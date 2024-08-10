@@ -14,7 +14,7 @@ namespace VanillaMoonsLagFix.Patches
     }
 
     [HarmonyPatch]
-    public class ArtificeLagFix
+    public class LagFixPatcher
     {
         [HarmonyPatch(typeof(RoundManager), nameof(RoundManager.LoadNewLevelWait))]
         [HarmonyPostfix]
