@@ -56,6 +56,7 @@ namespace VanillaMoonsLagFix.Patches
             {
                 Transform environment = GameObject.Find("/Environment").transform;
                 Transform windTriggers = environment.Find("ReverbTriggers (1)/WindTriggers");
+                
 
                 if (windTriggers == null)
                 {
@@ -63,9 +64,25 @@ namespace VanillaMoonsLagFix.Patches
                 }
                 else
                 {
-                    windTriggers.gameObject.SetActive(false);
+                    string pattern = "Cube.*";
 
-                    VanillaMoonsLagFix.Logger.LogDebug(String.Format("Set {0} activeSelf to false!", windTriggers.gameObject.name));
+                    int disabledTriggersCount = 0;
+
+                    for (int i = 0; i < windTriggers.childCount; i++)
+                    {
+                        Transform childObject = windTriggers.GetChild(i);
+
+                        if (Regex.IsMatch(childObject.name, pattern))
+                        {
+                            childObject.gameObject.SetActive(false);
+
+                            disabledTriggersCount++;
+
+                            VanillaMoonsLagFix.Logger.LogDebug(String.Format("Found WindTrigger object: {0}", childObject.name));
+                        }
+                    }
+
+                    VanillaMoonsLagFix.Logger.LogDebug(String.Format("Set {0} of WindTrigger activeSelf to false!", disabledTriggersCount));
 
                     return true;
                 }
@@ -81,12 +98,12 @@ namespace VanillaMoonsLagFix.Patches
                 }
                 else
                 {
+                    string pattern = "(LeavingShip|FallOffShip).*";
+
                     int disabledTriggersCount = 0;
 
                     for (int i = 0; i < reverbTriggers.Length; i++)
                     {
-                        string pattern = "(LeavingShip|FallOffShip).*";
-
                         if (Regex.IsMatch(reverbTriggers[i].name, pattern))
                         {
                             reverbTriggers[i].gameObject.SetActive(false);
@@ -97,7 +114,7 @@ namespace VanillaMoonsLagFix.Patches
                         }
                     }
 
-                    VanillaMoonsLagFix.Logger.LogDebug(String.Format("Set {0} reverb triggers' activeSelf to false!", disabledTriggersCount));
+                    VanillaMoonsLagFix.Logger.LogDebug(String.Format("Set {0} of ReverbTriggers activeSelf to false!", disabledTriggersCount));
 
                     return true;
                 }
