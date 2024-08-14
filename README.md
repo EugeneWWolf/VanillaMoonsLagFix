@@ -18,11 +18,16 @@ This mod works on the client-side.
 
 ## Changelog
 
-### v1.0.1
+### 1.0.2 (2024-08-14)
 
-- Fix frozen monitor when Player returns to ship
-- Fix ForestGiant walking through ship entry and eating you (yes)
+- Now the mod works not only for server hosts, but also for server clients (I promise)
 
-### v1.0.0
+### 1.0.1 (2024-08-10)
 
-- Release
+- Fixed a bug where monitors were not working when returning to the ship
+- Fixed a bug where a ForestGiant could come through the ship entrance and kill you (yes)
+- Fixed a bug when the player after death could not fly off the planet (black screen and the game menu was not active)
+
+### 1.0.0 (2024-08-10)
+
+Release
