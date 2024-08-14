@@ -16,7 +16,7 @@ namespace VanillaMoonsLagFix.Patches
     [HarmonyPatch]
     public class LagFixPatcher
     {
-        [HarmonyPatch(typeof(RoundManager), nameof(RoundManager.LoadNewLevelWait))]
+        [HarmonyPatch(typeof(RoundManager), nameof(RoundManager.SpawnOutsideHazards))]
         [HarmonyPostfix]
         public static void LoadNewLevelWaitArtificePatch(RoundManager __instance)
         {
