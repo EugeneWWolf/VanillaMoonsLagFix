@@ -1,62 +1,74 @@
 ﻿using HarmonyLib;
-using UnityEngine;
-using System.Text.RegularExpressions;
 using System;
+using System.Linq;
+using System.Text.RegularExpressions;
+using UnityEngine;
 
 namespace VanillaMoonsLagFix.Patches
 {
-    enum MoonsIDs
-    {
-        marchID = 4,
-        rendID = 6,
-        dineID = 7,
-        artificeID = 10
-    }
-
     [HarmonyPatch]
     public class LagFixPatcher
     {
         [HarmonyPatch(typeof(RoundManager), nameof(RoundManager.SpawnOutsideHazards))]
         [HarmonyPostfix]
-        public static void LoadNewLevelWaitArtificePatch(RoundManager __instance)
+        public static void PatchesExecuter(RoundManager __instance)
         {
-            bool needsToBePatched = Enum.IsDefined(typeof(MoonsIDs), __instance.currentLevel.levelID);
+            int currentLevelID = __instance.currentLevel.levelID;
+
+            bool needsToBePatched = MoonsToBePatched.enabledMoonsIds.Contains(currentLevelID);
 
             if (needsToBePatched)
             {
-                bool removedWindTriggers = TriggerRemover.WindTriggerRemover();
+                string moonName = MoonsToBePatched.AllMoons_idToName[currentLevelID];
 
-                string levelName = __instance.currentLevel.name;
+                bool removedWindTriggers = TriggerRemover.RemoveWindTriggers();
 
                 if (removedWindTriggers)
                 {
-                    VanillaMoonsLagFix.Logger.LogInfo(String.Format("Successfully disabled wind triggers on {0}.", levelName));
+                    VanillaMoonsLagFix.Logger.LogInfo(String.Format("Successfully disabled wind triggers on {0}.", moonName));
                 }
                 else
                 {
-                    VanillaMoonsLagFix.Logger.LogError(String.Format("Wind triggers on {0} seem to be unloaded, can't modify them.", levelName));
+                    VanillaMoonsLagFix.Logger.LogError(String.Format("Wind triggers on {0} seem to be unloaded, can't modify them.", moonName));
                 }
 
-                bool removedReverbTriggers = TriggerRemover.AudioReverbTriggerRemover();
+                bool removedReverbTriggers = TriggerRemover.ManageAudioReverbTriggers(false);
 
                 if (removedReverbTriggers)
                 {
-                    VanillaMoonsLagFix.Logger.LogInfo(String.Format("Successfully disabled reverb triggers on {0}.", levelName));
+                    VanillaMoonsLagFix.Logger.LogInfo(String.Format("Successfully disabled reverb triggers on {0}.", moonName));
                 }
                 else
                 {
-                    VanillaMoonsLagFix.Logger.LogError(String.Format("Reverb triggers on {0} seem to be unloaded, can't modify them.", levelName));
+                    VanillaMoonsLagFix.Logger.LogError(String.Format("Reverb triggers on {0} seem to be unloaded, can't modify them.", moonName));
+                }
+            }
+            else
+            {
+                /*
+                 * The decision to re-enable these scene triggers is based on the fact that some triggers are permanently disabled until manually re-enabled.
+                 * I suspected this might cause issues, so I re-enabled them when players arrive at the moon, where the patch is disabled.
+                 */
+                bool enabledReverbTriggers = TriggerRemover.ManageAudioReverbTriggers(true);
+
+                if (enabledReverbTriggers)
+                {
+                    VanillaMoonsLagFix.Logger.LogInfo(String.Format("Successfully re-enabled reverb triggers on {0} (patch is disabled here).", __instance.currentLevel.PlanetName));
+                }
+                else
+                {
+                    VanillaMoonsLagFix.Logger.LogError(String.Format("Reverb triggers on {0} seem to be unloaded, can't re-enable them.", __instance.currentLevel.PlanetName));
                 }
             }
         }
 
         class TriggerRemover
         {
-            internal static bool WindTriggerRemover()
+            internal static bool RemoveWindTriggers()
             {
                 Transform environment = GameObject.Find("/Environment").transform;
                 Transform windTriggers = environment.Find("ReverbTriggers (1)/WindTriggers");
-                
+
 
                 if (windTriggers == null)
                 {
@@ -88,9 +100,14 @@ namespace VanillaMoonsLagFix.Patches
                 }
             }
 
-            internal static bool AudioReverbTriggerRemover()
+            /*
+             * state = true -> re-enable disabled AudioReverbTriggers.
+             * state = false -> disable AudioReverbTriggers.
+             */
+            internal static bool ManageAudioReverbTriggers(bool state)
             {
-                AudioReverbTrigger[] reverbTriggers = GameObject.FindObjectsByType<AudioReverbTrigger>(FindObjectsSortMode.None);
+                // FindObjectsOfTypeAll is used to include inactive objects of type AudioReverbTrigger in the search results.
+                AudioReverbTrigger[] reverbTriggers = Resources.FindObjectsOfTypeAll<AudioReverbTrigger>(); ;
 
                 if (reverbTriggers == null)
                 {
@@ -100,21 +117,21 @@ namespace VanillaMoonsLagFix.Patches
                 {
                     string pattern = "(LeavingShip|FallOffShip).*";
 
-                    int disabledTriggersCount = 0;
+                    int changedTriggersCount = 0;
 
                     for (int i = 0; i < reverbTriggers.Length; i++)
                     {
                         if (Regex.IsMatch(reverbTriggers[i].name, pattern))
                         {
-                            reverbTriggers[i].gameObject.SetActive(false);
+                            reverbTriggers[i].gameObject.SetActive(state);
 
-                            disabledTriggersCount++;
+                            changedTriggersCount++;
 
                             VanillaMoonsLagFix.Logger.LogDebug(String.Format("Found AudioReverbTrigger object: {0}", reverbTriggers[i].gameObject.name));
                         }
                     }
 
-                    VanillaMoonsLagFix.Logger.LogDebug(String.Format("Set {0} of ReverbTriggers activeSelf to false!", disabledTriggersCount));
+                    VanillaMoonsLagFix.Logger.LogDebug(String.Format("Changed state of {0} ReverbTriggers activeSelf! (they are now enabled: {1})", changedTriggersCount, state));
 
                     return true;
                 }
