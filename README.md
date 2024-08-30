@@ -18,6 +18,11 @@ This mod works on the client-side.
 
 ## Changelog
 
+### 1.0.3 (2024-08-30)
+
+- This mod now works with all vanilla planets by default, but you can change it in the configuration (**!!! MODDED MOONS ARE NOT SUPPORTED !!!**)
+- A bug was fixed where some triggers remained disabled even if you're on a moon where the patch is disabled
+
 ### 1.0.2 (2024-08-14)
 
 - Now the mod works not only for server hosts, but also for server clients (I promise)
