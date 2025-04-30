@@ -1,21 +1,41 @@
 # VanillaMoonsLagFix
-Works on the following moons:
-- Artifice
+Works on the following moons (configurable):
+- Experimentation
+- Assurance
+- Vow
 - March
-- Dine
+- Adamance
 - Rend
+- Dine
+- Offense
+- Titan
+- Artifice
+- Embrion
 
 ## What does it do?
 This mod disables specific AudioReverbTriggers and WindTriggers which cause massive lag spikes around the ship for some reason.
 
 No more, no less.
 
-> :warning: These lag spikes are only visible if you're playing with a lot of mods.
+> ! ATTENTION ! These lag spikes are only visible if you're playing with a lot of mods.
+
+## Recommended mods
+
+1. [GeneralImprovements by ShaosilGaming](https://thunderstore.io/c/lethal-company/p/ShaosilGaming/GeneralImprovements/). You should probably use this mod with mine, as it only fixes other triggers that are not affected by VanillaMoonsLagFix.
+
+Some bugs may appear when using GeneralImprovements with my mod. I haven't tested it thoroughly.
+
+## Similar mods
+
+If you have issues with my mod, check these out.
+
+1. [ReverbTriggerFix by JacobG5](https://thunderstore.io/c/lethal-company/p/JacobG5/ReverbTriggerFix/). This mod tries to fix laggy AudioReverbTriggers in a different way. Instead of turning them off, JacobG5 changed their behavior to be less overwhelming for your computer.
+
+**!!! DO NOT INSTALL REVERBTRIGGERFIX ALONG WITH MY MOD. IT WILL CAUSE MANY ISSUES AND MAY EVEN CRASH THE GAME. CHOOSE EITHER MINE MOD OR JACOBG5'S. !!!**
 
 ## Multiplayer compatibility
 
 This mod works on the client-side.
-
 ## Changelog
 
 ### 1.0.3 (2024-08-30)
